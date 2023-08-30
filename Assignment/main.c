@@ -49,12 +49,12 @@ void runMethod(int n, int r1, int r2, bool useCounts) {
         qsort(nums, nn, sizeof(int), comp_int);
         // Change every 10th number to -1
         int tmp = 0, expected = n * 0.1;
-        for (int i = 9; i < nn; i += 10) {
+        for (int i = 9; i < nn; i += 11) {
             if (tmp == expected) break;
             // Do not change if the nums before or after are equal to it (duplicate)
             if ((i > 0 && nums[i - 1] == nums[i]) || (i < nn - 1 && nums[i + 1] == nums[i])) {
                 int j = i;
-                while (j > 0 && nums[j - 1] == nums[i]) {
+                while (j > 0 && (nums[j - 1] == nums[i] || nums[j - 1] == -1)) {
                     j--;
                 }
                 nums[j] = -1;
@@ -75,14 +75,13 @@ void runMethod(int n, int r1, int r2, bool useCounts) {
 //            printf("%d ", nums[i]);
 //        }
 //        printf("\n");
-
+//
     }
 
     // At this point in time I have an array of n numbers with every 10th number being -1
     // {1, 2, 3, 4, 5, 6, 7, 8, 9, -1, 10, 11, 12, 13, 13, 13, 16, 17, 18, 19, -1, 20}
 
-    clock_t start, end, s, e;
-    double sec = ((double) e - (double) s) / CLOCKS_PER_SEC;
+    clock_t start, end;
     while (count++ < tops) {
         int op = rand() % nops;
         start = clock();
@@ -121,7 +120,7 @@ void runMethod(int n, int r1, int r2, bool useCounts) {
     printf("\nn = %d, r1 = %d, r2 = %d, Memory used = %f\n", n, r1, r2, memory);
     printf(" \t\t Op Counts \t Total time \t Avg. Time \n");
     for (int i = 0; i < nops; i++) {
-        printf("%-10s \t %-13.6d \t %f \t %.10e \n", operations[i], opCounts[i], times[i], (times[i] / opCounts[i]));
+        printf("%-10s \t %-13.6d \t %lf \t %.10e \n", operations[i], opCounts[i], times[i], (times[i] / opCounts[i]));
     }
 
 
@@ -343,13 +342,8 @@ int binary_search(int value) {
     int lower = 0, upper = n - 1;
     int tmp = 0;
     bool empty = false;
+    int middle = (upper + lower) / 2;
     while (lower <= upper) {
-        int middle = (upper + lower) / 2;
-
-//        if (nums[middle] == -1 && !empty) {
-//            empty = true;
-//            tmp = middle;
-//        }
         while (nums[middle] == -1) {
             middle--;
         }
@@ -359,26 +353,21 @@ int binary_search(int value) {
             }
             return middle;
         }
-        /**
-         * TODO: INDEX = 3
-         * TODO: LOOKING FOR = NUMS[7]
-         * TODO:   0  1   2   3   4  5  6  7  8
-         * TODO: [ 1, 2, -1, -1, -1, 6, 7, 8, 9 ]
-         *
-         */
+
         else if (nums[middle] < value) {
-//            if(empty) {
-//                middle = tmp;
-//            }
             while(nums[middle] == -1 || nums[middle] < value)
                 middle++;
-            lower = middle; // empty ? middle : middle + 1;
-//            empty = false;
+
+            // TODO: This is latest implementation
+            if (nums[middle] > value)
+                return -middle;
+            // ----
+
+            lower = middle;
 
         } else {
             upper = middle - 1;
         }
-//        printf("%d ", nums[middle]);
     }
     return -1;
 }
