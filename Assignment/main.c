@@ -5,14 +5,15 @@
 
 bool useCounts = true, testing = false;
 int n, r1, r2, range, r, currentMaxIndex = -1, currentMinIndex = -1, nn;
-int *values, *counts;
+int *nums, *counts;
+int array[11] = {10, 10, 24, 31, 41, 50, 50, 59, 73, 74, 74};
 double times[7] = {0};
 int opCounts[7] = {0};
 double avgtime[7] = {0};
 float memory;
 
 // Prototypes for operations
-int binarySearch(int v); // Return -1 if not there, or index of values for the first one
+int binarySearch(int v); // Return -1 if not there, or index of nums for the first one
 int find(int v); // Find instances of a value
 int add(int v); // Add value to some integer
 int delete(int v); // Delete some value
@@ -22,38 +23,51 @@ int nmin(); // Minimum value in array
 int nmax(); // Max value in array
 int comp_int(const void *a, const void *b);
 
-int binary_search(int array[], int n, int value);
+int binary_search(int value);
 
 void runMethod(int n, int r1, int r2, bool useCounts) {
     const int nops = 7;
     int tops = nops * 0.1 * n;
     int count = 0;
     memory = useCounts ? (range * sizeof(int) / 1000000.0) : (nn * (sizeof(int)) / 1000000.0);
-    r = useCounts ? (rand() % range + r1) : (rand() % nn);
+    r = useCounts ? (rand() % range - 1) : (rand() % nn);
 
 
     if (useCounts){
+        printf("Using counts\n");
+        // ./file 100m 1 100k
         // Generate n numbers and increment the frequency in the range
         for (int i = 0; i < n; i++){
-            int index = rand() % range + 1;
-            counts[index] += 1;
+            counts[r] += 1;
         }
-    }
-    else{
+    } else {
+        printf("Using nums\n");
         // Generate 1.1 * n random numbers and sort them
         for (int i = 0; i < nn; i++) {
-            values[i] = rand() % range + r1;
+            nums[i] = rand() % range + r1;
         }
-        qsort(values, nn, sizeof(int), comp_int);
-
+        qsort(nums, nn, sizeof(int), comp_int);
         // Change every 10th number to -1
+        int tmp = 0, expected = n * 0.1;
         for (int i = 9; i < nn; i += 10) {
-            // Do not change if the values before or after are equal to it (duplicate)
-            if ((i > 0 && values[i - 1] == values[i]) || (i < nn - 1 && values[i + 1] == values[i])) {
+            if (tmp == expected) break;
+            // Do not change if the nums before or after are equal to it (duplicate)
+            if ((i > 0 && nums[i - 1] == nums[i]) || (i < nn - 1 && nums[i + 1] == nums[i])) {
+                int j = i;
+                while (j > 0 && nums[j - 1] == nums[i]) {
+                    j--;
+                }
+                nums[j] = -1;
+                tmp++;
+
                 continue;
             }
-            values[i] = -1;
+            nums[i] = -1;
+            tmp++;
         }
+        printf("Current count of -1 in array: %d \n", tmp);
+        printf("Expected amount of -1 in array: %f \n", n * 0.1);
+
     }
 
     // At this point in time I have an array of n numbers with every 10th number being -1
@@ -66,58 +80,25 @@ void runMethod(int n, int r1, int r2, bool useCounts) {
         start = clock();
         switch (op) {
             case 0: // find
-                s = clock();
                 find(r);
-                e = clock();
-                sec = ((double) e - (double) s) / CLOCKS_PER_SEC;
-                avgtime[op] += sec;
                 break;
-
             case 1: // add
-                s = clock();
                 add(r);
-
-                e = clock();
-                sec = ((double) e - (double) s) / CLOCKS_PER_SEC;
-                avgtime[op] += sec;
                 break;
-
             case 2: // delete
-                s = clock();
                 delete(r);
-                e = clock();
-                sec = ((double) e - (double) s) / CLOCKS_PER_SEC;
-                avgtime[op] += sec;
                 break;
-
             case 3: // succ
-                s = clock();
                 succ(r);
-                e = clock();
-                sec = ((double) e - (double) s) / CLOCKS_PER_SEC;
-                avgtime[op] += sec;
                 break;
             case 4: // pred
-                s = clock();
                 pred(r);
-                e = clock();
-                sec = ((double) e - (double) s) / CLOCKS_PER_SEC;
-                avgtime[op] += sec;
                 break;
             case 5: // nmin
-                s = clock();
                 nmin();
-                e = clock();
-                sec = ((double) e - (double) s) / CLOCKS_PER_SEC;
-                avgtime[op] += sec;
                 break;
-
             case 6: // nmax
-                s = clock();
                 nmax();
-                e = clock();
-                sec = ((double) e - (double) s) / CLOCKS_PER_SEC;
-                avgtime[op] += sec;
                 break;
 
         }
@@ -132,13 +113,31 @@ void runMethod(int n, int r1, int r2, bool useCounts) {
     printf("\nn = %d, r1 = %d, r2 = %d, Memory used = %f\n", n, r1, r2, memory);
     printf(" \t\t Op Counts \t Total time \t Avg. Time \n");
     for (int i = 0; i < nops; i++) {
-        printf("%-10s \t %-13.6d \t %f \t %.10e \n", operations[i], opCounts[i], times[i], (avgtime[i] / tops));
-
-
+        printf("%-10s \t %-13.6d \t %f \t %.10e \n", operations[i], opCounts[i], times[i], (times[i] / opCounts[i]));
     }
 
 }
 
+void test() {
+    printf("Doing test run");
+//    n = abs(n);
+//    int size = sizeof(array) / sizeof(array[0]);
+//    qsort(array, size, sizeof(int), comp_int);
+//
+//    printf("Numbers: ");
+//    for (int i = 0; i < size; i++)
+//    {
+//        printf("%d ", array[i]);
+//    }
+////    printf(": min %d : max %d\n", nmin(), nmax());
+//
+//    for (int i = 0; i < n; i++)
+//    {
+//        int target = array[i];
+//        printf("%d\n", target);
+//
+//    }
+}
 
 void drive() {
     useCounts = (range < n) ? true : false;
@@ -147,15 +146,21 @@ void drive() {
     if (useCounts) {
         free(counts);
     } else {
-        free(values);
+        free(nums);
     }
 }
 
 int main(int argc, char *argv[]) {
+    if (argc < 4) {
+        printf("Usage: <PROGRAM NAME> n r1 r2\n");
+        return -1;
+    }
     n = atoi(argv[1]);
     r1 = atoi(argv[2]);
     r2 = atoi(argv[3]);
     nn = n * 1.1;
+
+
 
 //    srand(time(NULL));
 
@@ -163,40 +168,27 @@ int main(int argc, char *argv[]) {
 
     // Allocate memory for counts and initialize it to zero
     counts = (int *) malloc(range * sizeof(int));
-    values = (int *) malloc(nn * sizeof(int));
+    nums = (int *) malloc(nn * sizeof(int));
 
+//    if (n < 0)
+//        testing = true;
+//        test();
     drive();
-
-    // Free the allocated memory for counts
     return 0;
 }
 
-
-// TODO: Sample run 3
-void test() {
-}
-
-
-/**
- *
- * Functions for operations using @param v to @return value
- *
- * TODO: Add the functions for the Array method (for Sample 2)
- *
- */
 int find(int v) {
     if (useCounts) {
         return counts[v - r1];
     } else {
         int amount = 1;
-        int index = binary_search(values, n, v);
+        int index = binary_search(v);
         if (index != -1) {
             // Check for duplicates to the right
-            while (index < nn - 1 && values[index + 1] == v) {
+            while (index < nn - 1 && nums[index + 1] == v) {
                 index++;
                 amount++;
             }
-
             return amount;
         }
         return -1;
@@ -204,62 +196,38 @@ int find(int v) {
 }
 
 int add(int v) {
-
     if (useCounts) {
-        if (counts[v - r1 + 1] < range) {
-            counts[v - r1 + 1]++;
-            if (v - r1 + 1 > currentMaxIndex) {
-                currentMaxIndex = v - r1 + 1;
-            }
-            if (v - r1 < currentMinIndex || currentMinIndex == -1) {
-                currentMinIndex = v - r1;
-            }
-        }
+        counts[v - r1]++;
+        return 1;
     }
-    int index = binary_search(values, nn, r);
+    int index = binary_search(v);
     index = abs(index);
 
     int end = index;
-    while (values[end] != -1 && end < n) end++; // Search right
-    if (end == n) {
-        while (values[end] != -1 && end > 0) end--;
+    while (nums[end] != -1 && end < nn) end++; // Search right
+    if (end == nn) {
+        while (nums[end] != -1 && end > 0) end--;
+        
         for (int i = end; i < index; i++)
-            values[i] = values[i + 1];
+            nums[i] = nums[i + 1];
     }
     else // Move right
         for (int i = end; i > index; i--)
-            values[i] = values[i - 1];
-    values[index] = v;
+            nums[i] = nums[i - 1];
+    nums[index] = v;
     return 1;
 
 }
-
-
-
 int delete(int v) {
+
     if (useCounts) {
         if (counts[v - r1] > 0) {
             counts[v - r1]--;
-            if (v - r1 == currentMaxIndex && counts[v - r1] == 0) {
-                for (int i = currentMaxIndex - 1; i >= 0; i--) {
-                    if (counts[i] != 0) {
-                        currentMaxIndex = i;
-                        break;
-                    }
-                }
-            }
-            if (v - r1 == currentMinIndex && counts[v - r1] == 0) {
-                for (int i = currentMinIndex + 1; i < range; i++) {
-                    if (counts[i] != 0) {
-                        currentMinIndex = i;
-                        break;
-                    }
-                }
-            }
         }
+        return 1;
     } else {
-        int index = binary_search(values, n, v);
-        values[index] = -1;
+        int index = binary_search(v);
+        nums[index] = -1;
     }
     return -1;
 }
@@ -275,17 +243,17 @@ int succ(int v) {
         }
         return i;
     } else {
-        int index = binary_search(values, n, v);
+        int index = binary_search(v);
         if (index != -1) {
             int successor = index + 1;
-            while (successor < n && (values[successor] == -1 || values[successor] == v)) {
+            while (successor < n && (nums[successor] == -1 || nums[successor] == v)) {
                 successor++;
             }
-            while (successor < n && successor > 0 && values[successor - 1] == values[successor]) {
+            while (successor < n && successor > 0 && nums[successor - 1] == nums[successor]) {
                 successor++;
             }
             if (successor < n) {
-                return values[successor];
+                return nums[successor];
             }
         }
     }
@@ -303,17 +271,17 @@ int pred(int v) {
         }
         return i;
     } else {
-        int index = binary_search(values, n, v);
+        int index = binary_search(v);
         if (index != -1) {
             int predecessor = index - 1;
-            while (predecessor >= 0 && (values[predecessor] == -1 || values[predecessor] == v)) {
+            while (predecessor >= 0 && (nums[predecessor] == -1 || nums[predecessor] == v)) {
                 predecessor--;
             }
-            while (predecessor >= 0 && predecessor < n - 1 && values[predecessor] == values[predecessor + 1]) {
+            while (predecessor >= 0 && predecessor < n - 1 && nums[predecessor] == nums[predecessor + 1]) {
                 predecessor--;
             }
             if (predecessor >= 0) {
-                return values[predecessor];
+                return nums[predecessor];
             }
         }
     }
@@ -321,25 +289,34 @@ int pred(int v) {
 }
 
 int nmin() {
-    if (useCounts && currentMinIndex != -1) {
-        return counts[currentMinIndex];
+    if (useCounts) {
+        return counts[0];
     } else {
+//        if (testing){
+//            return array[0];
+//        }
         int index = 0;
-        while (values[index] == -1)
+        while (nums[index] == -1)
             index++;
-        return values[index];
+        return nums[index];
     }
 }
 
 int nmax() {
-    if (useCounts && currentMaxIndex != -1) {
-        return counts[currentMaxIndex];
+    if (useCounts) {
+        int index = range -1;
+        return counts[index];
     } else {
+//        if (testing) {
+//            int size = sizeof(array) / sizeof(array[0]);
+//            int index = size - 1;
+//            return array[index];
+//        }
         int index = nn - 1;
-        while (values[index] == -1)
+        while (nums[index] == -1)
             index--;
 
-        return values[index];
+        return nums[index];
     }
 }
 
@@ -347,21 +324,30 @@ int comp_int(const void *a, const void *b) {
     return *(int *) a - *(int *) b;
 }
 
-int binary_search(int array[], int n, int value) {
+int binary_search(int value) {
     int lower = 0, upper = n - 1;
-
+    int tmp = 0;
     while (lower <= upper) {
         int middle = (upper + lower) / 2;
-        while (array[middle] == -1) {
+
+        if (nums[middle] == -1)
+            tmp = middle;
+        while (nums[middle] == -1) {
             middle--;
         }
-        if (array[middle] == value) {
-            while (middle > 0 && array[middle - 1] == value) {
+        if (nums[middle] == value) {
+            while (middle > 0 && nums[middle - 1] == value) {
                 middle--;
             }
             return middle;
-        } else if (array[middle] < value) {
-            lower = middle + 1;
+        }
+
+
+        else if (nums[middle] < value) {
+            middle = tmp;
+            while(nums[middle] == -1 || nums[middle] < value)
+                middle++;
+            lower = middle;
         } else {
             upper = middle - 1;
         }
