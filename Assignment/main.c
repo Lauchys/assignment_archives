@@ -215,38 +215,25 @@ int add(int v) {
                 currentMinIndex = v - r1;
             }
         }
-    } else {
-        int index = -1;
-
-        // Find the correct index to insert the new value
-        for (int i = 0; i < nn - 1; i++) {
-            if (values[i] <= v && values[i + 1] > v) {
-                index = i + 1;
-                break;
-            }
-        }
-
-        if (index != -1) {
-            // Shift numbers to the right, starting from the last element
-            for (int i = nn - 1; i > index; i--) {
-                if (values[i - 1] != -1) {
-                    values[i] = values[i - 1];
-                } else {
-                    // Move all the way to the leftmost -1
-                    int leftMost = i - 1;
-                    while (leftMost >= 0 && values[leftMost] == -1) {
-                        leftMost--;
-                    }
-                    values[i] = values[leftMost];
-                }
-            }
-
-            // Insert the new value at the correct index
-            values[index] = v;
-        }
     }
-    return 0;
+    int index = binary_search(values, nn, r);
+    index = abs(index);
+
+    int end = index;
+    while (values[end] != -1 && end < n) end++; // Search right
+    if (end == n) {
+        while (values[end] != -1 && end > 0) end--;
+        for (int i = end; i < index; i++)
+            values[i] = values[i + 1];
+    }
+    else // Move right
+        for (int i = end; i > index; i--)
+            values[i] = values[i - 1];
+    values[index] = v;
+    return 1;
+
 }
+
 
 
 int delete(int v) {
@@ -365,8 +352,8 @@ int binary_search(int array[], int n, int value) {
 
     while (lower <= upper) {
         int middle = (upper + lower) / 2;
-        if (array[middle] < 0) {
-            middle += 1;
+        while (array[middle] == -1) {
+            middle--;
         }
         if (array[middle] == value) {
             while (middle > 0 && array[middle - 1] == value) {
