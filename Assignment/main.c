@@ -68,6 +68,14 @@ void runMethod(int n, int r1, int r2, bool useCounts) {
         printf("Current count of -1 in array: %d \n", tmp);
         printf("Expected amount of -1 in array: %f \n", n * 0.1);
 
+//        for (int i = 0; i < nn; i++) {
+//            if(nums[i] == -1){
+//                printf("\n");
+//            }
+//            printf("%d ", nums[i]);
+//        }
+//        printf("\n");
+
     }
 
     // At this point in time I have an array of n numbers with every 10th number being -1
@@ -116,6 +124,8 @@ void runMethod(int n, int r1, int r2, bool useCounts) {
         printf("%-10s \t %-13.6d \t %f \t %.10e \n", operations[i], opCounts[i], times[i], (times[i] / opCounts[i]));
     }
 
+
+
 }
 
 void test() {
@@ -140,9 +150,7 @@ void test() {
 }
 
 void drive() {
-    useCounts = (range < n) ? true : false;
     runMethod(n, r1, r2, useCounts);
-
     if (useCounts) {
         free(counts);
     } else {
@@ -165,10 +173,14 @@ int main(int argc, char *argv[]) {
 //    srand(time(NULL));
 
     range = r2 - r1 + 1; // r1 = 3, r2 = 10, range = 8
+    useCounts = (range < n) ? true : false;
 
     // Allocate memory for counts and initialize it to zero
-    counts = (int *) malloc(range * sizeof(int));
-    nums = (int *) malloc(nn * sizeof(int));
+    if (useCounts) {
+        counts = (int *) malloc(range * sizeof(int));
+    } else {
+        nums = (int *) malloc(nn * sizeof(int));
+    }
 
 //    if (n < 0)
 //        testing = true;
@@ -227,9 +239,12 @@ int delete(int v) {
         return 1;
     } else {
         int index = binary_search(v);
-        nums[index] = -1;
+        if (index >= 0) {
+            nums[index] = -1;
+            return 1;
+        }
+        return 0;
     }
-    return -1;
 }
 
 int succ(int v) {
@@ -327,11 +342,14 @@ int comp_int(const void *a, const void *b) {
 int binary_search(int value) {
     int lower = 0, upper = n - 1;
     int tmp = 0;
+    bool empty = false;
     while (lower <= upper) {
         int middle = (upper + lower) / 2;
 
-        if (nums[middle] == -1)
-            tmp = middle;
+//        if (nums[middle] == -1 && !empty) {
+//            empty = true;
+//            tmp = middle;
+//        }
         while (nums[middle] == -1) {
             middle--;
         }
@@ -341,16 +359,26 @@ int binary_search(int value) {
             }
             return middle;
         }
-
-
+        /**
+         * TODO: INDEX = 3
+         * TODO: LOOKING FOR = NUMS[7]
+         * TODO:   0  1   2   3   4  5  6  7  8
+         * TODO: [ 1, 2, -1, -1, -1, 6, 7, 8, 9 ]
+         *
+         */
         else if (nums[middle] < value) {
-            middle = tmp;
+//            if(empty) {
+//                middle = tmp;
+//            }
             while(nums[middle] == -1 || nums[middle] < value)
                 middle++;
-            lower = middle;
+            lower = middle; // empty ? middle : middle + 1;
+//            empty = false;
+
         } else {
             upper = middle - 1;
         }
+//        printf("%d ", nums[middle]);
     }
     return -1;
 }
