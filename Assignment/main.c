@@ -339,11 +339,11 @@ int comp_int(const void *a, const void *b) {
 }
 
 int binary_search(int value) {
-    int lower = 0, upper = n - 1;
+    int lower = 0, upper = nn - 1;
     int tmp = 0;
     bool empty = false;
-    int middle = (upper + lower) / 2;
     while (lower <= upper) {
+        int middle = (upper + lower) / 2;
         while (nums[middle] == -1) {
             middle--;
         }
@@ -353,17 +353,15 @@ int binary_search(int value) {
             }
             return middle;
         }
-
         else if (nums[middle] < value) {
             while(nums[middle] == -1 || nums[middle] < value)
                 middle++;
-
             // TODO: This is latest implementation
             if (nums[middle] > value)
                 return -middle;
             // ----
 
-            lower = middle;
+            lower = middle + 1;
 
         } else {
             upper = middle - 1;
