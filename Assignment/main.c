@@ -6,7 +6,7 @@
 #define NOPS 7
 
 bool useCounts = true, testing = false;
-int n, r1, r2, range, r, currentMaxIndex = -1, currentMinIndex = -1, nn;
+int n, r1, r2, range, currentMaxIndex = -1, currentMinIndex = -1, nn;
 int *nums, *counts;
 int array[11] = {10, 10, 24, 31, 41, 50, 50, 59, 73, 74, 74};
 int testnum[8] = {10, 24, 31, 41, 50, 59, 73, 74};
@@ -26,20 +26,20 @@ int nmin(); // Minimum value in array
 int nmax(); // Max value in array
 int comp_int(const void *a, const void *b);
 int binary_search(int value);
+void test();
+void drive();
 
 void runMethod() {
     int tops = NOPS * 0.1 * n;
     int count = 0;
     memory = useCounts ? (range * sizeof(int) / 1000000.0) : (nn * (sizeof(int)) / 1000000.0);
-    r = useCounts ? (rand() % range - 1) : (rand() % nn);
-
 
     if (useCounts){
         printf("Using counts\n");
         // ./file 100m 1 100k
         // Generate n numbers and increment the frequency in the range
         for (int i = 0; i < n; i++){
-            counts[r] += 1;
+            counts[rand() % range - 1] += 1;
         }
     } else {
         printf("Using nums\n");
@@ -166,7 +166,7 @@ void test() {
 }
 
 void drive() {
-    runMethod(n, r1, r2, useCounts);
+    runMethod();
     if (useCounts) {
         free(counts);
     } else {
@@ -175,6 +175,7 @@ void drive() {
 }
 
 int main(int argc, char *argv[]) {
+
     if (argc < 4) {
         printf("Usage: <PROGRAM NAME> n r1 r2\n");
         return -1;
@@ -246,7 +247,6 @@ int add(int v) {
     int index = binary_search(v);
 
     index = abs(index);
-
     int end = index;
     while (oparray[end] != -1 && end < opn) end++; // Search right
 
@@ -256,7 +256,8 @@ int add(int v) {
         for (int i = end; i < index; i++)
             oparray[i] = oparray[i + 1];
     }
-    else // Move right
+    else {// Move right
+        //printf("MOVING RIGHT: %d\n", end-index);
         for (int i = end; i > index; i--)
             oparray[i] = oparray[i - 1];
     }
@@ -461,7 +462,9 @@ int binary_search(int value) { // Nope
 //            while (oparray[lower] == -1)
 //                lower++;
         } else {
-            upper = middle - 1;
+            upper = middle - 1; // good
+//            while (oparray[upper] == -1)
+//                upper--;
         }
     }
 
