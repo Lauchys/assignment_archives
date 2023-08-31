@@ -167,8 +167,6 @@ int main(int argc, char *argv[]) {
     r2 = atoi(argv[3]);
     nn = n * 1.1;
 
-
-
 //    srand(time(NULL));
 
     range = r2 - r1 + 1; // r1 = 3, r2 = 10, range = 8
@@ -339,28 +337,36 @@ int comp_int(const void *a, const void *b) {
 }
 
 int binary_search(int value) {
-    int lower = 0, upper = nn - 1;
-    int tmp = 0;
-    bool empty = false;
+    int lower = 0, upper = n - 1;
+    // int tmp = 0;
+    // bool empty = false;
+
     while (lower <= upper) {
-        int middle = (upper + lower) / 2;
-        while (nums[middle] == -1) {
-            middle--;
-        }
+//        int middle = (upper + lower) / 2;
+        int middle = lower + rand() % (upper - lower + 1);
+
+
+        // while (nums[middle] == -1) {
+        //     middle--;
+        // }
+
         if (nums[middle] == value) {
             while (middle > 0 && nums[middle - 1] == value) {
                 middle--;
             }
             return middle;
         }
-        else if (nums[middle] < value) {
-            while(nums[middle] == -1 || nums[middle] < value)
-                middle++;
-            // TODO: This is latest implementation
-            if (nums[middle] > value)
-                return -middle;
-            // ----
 
+        else if (nums[middle] < value) {
+            // while(nums[middle] == -1 || nums[middle] < value)
+            //     middle++;
+
+            // // TODO: This is latest implementation
+            // if (nums[middle] > value)
+            //     return -middle;
+            // // ----
+
+            // lower = middle;
             lower = middle + 1;
 
         } else {
