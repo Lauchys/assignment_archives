@@ -53,30 +53,49 @@ void runMethod() {
         for (int i = 9; i < nn; i += 11) {
             if (tmp == expected) break;
             // Do not change if the nums before or after are equal to it (duplicate)
-            if ((i > 0 && nums[i - 1] == nums[i]) || (i < nn - 1 && nums[i + 1] == nums[i])) {
-                int j = i;
-                while (j > 0 && (nums[j - 1] == nums[i] || nums[j - 1] == -1)) {
-                    j--;
-                }
-                nums[j] = -1;
-                tmp++;
-
-                continue;
+            int vv = nums[i];
+            int ii = i;
+            while (nums[ii] != vv) {
+                ii++;
             }
-            nums[i] = -1;
-            tmp++;
+            int distance = ii - i;
+            if (distance > 1) { // 1 1 2
+                int d = distance / 11;
+                if (d == 0) d = 1;
+                for (int j=1; j<=d; j++) {
+                    nums[i-j]=-1;
+                    tmp++;
+                }
+            } else {
+                nums[i] = -1;
+                tmp++;
+            }
+
+//            // 1111111111122222x222222222222x22222222222x222225555555555555555
+//            if ((i > 0 && nums[i - 1] == nums[i]) || (i < nn - 1 && nums[i + 1] == nums[i])) {
+//                int j = i;
+//                while (j > 0 && (nums[j - 1] == nums[i] || nums[j - 1] == -1)) {
+//                    j--;
+//                }
+//                nums[j] = -1;
+//                tmp++;
+//
+//                continue;
+//            }
+            //nums[i] = -1;
+            //tmp++;
         }
         printf("Current count of -1 in array: %d \n", tmp);
         printf("Expected amount of -1 in array: %f \n", n * 0.1);
 
-//        for (int i = 0; i < nn; i++) {
-//            if(nums[i] == -1){
-//                printf("\n");
-//            }
-//            printf("%d ", nums[i]);
-//        }
-//        printf("\n");
-//
+        for (int i = 109999000; i < nn; i++) {
+            if(nums[i] == -1){
+                printf("\n");
+            }
+            printf("%d ", nums[i]);
+        }
+        printf("\n");
+
     }
 
     // At this point in time I have an array of n numbers with every 10th number being -1
@@ -249,6 +268,7 @@ int add(int v) {
     index = abs(index);
     int end = index;
     while (oparray[end] != -1 && end < opn) end++; // Search right
+    //printf("end = %d, index = %d\n", end, index);
 
     if (end == opn) {
         while (oparray[end] != -1 && end > 0) end--;
@@ -274,8 +294,9 @@ int delete(int v) {
     } else {
         int *oparray = (testing) ? array : nums;
         int index = binary_search(v);
-        //printf("BINARY SEARCH DELETE %d\n", index);
+        //printf("BINARY SEARCH DELETE %d,%d\n", v, index);
         if (index >= 0) {
+            //printf("d: %d\n", index);
             oparray[index] = -1;
             return 1;
         }
@@ -467,6 +488,9 @@ int binary_search(int value) { // Nope
 //                upper--;
         }
     }
-
+    if (upper < lower/*&& oparray[lower] != -1*/) {
+        return upper;
+    }
+//    printf("death %d - %d\n", lower, upper);
     return -1;
 }
