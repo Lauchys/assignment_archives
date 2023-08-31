@@ -3,17 +3,20 @@
 #include <time.h>
 #include <stdbool.h>
 
+#define NOPS 7
+
 bool useCounts = true, testing = false;
 int n, r1, r2, range, r, currentMaxIndex = -1, currentMinIndex = -1, nn;
 int *nums, *counts;
 int array[11] = {10, 10, 24, 31, 41, 50, 50, 59, 73, 74, 74};
+int testnum[8] = {10, 24, 31, 41, 50, 59, 73, 74};
+
 double times[7] = {0};
 int opCounts[7] = {0};
 double avgtime[7] = {0};
 float memory;
 
 // Prototypes for operations
-int binarySearch(int v); // Return -1 if not there, or index of nums for the first one
 int find(int v); // Find instances of a value
 int add(int v); // Add value to some integer
 int delete(int v); // Delete some value
@@ -22,12 +25,10 @@ int pred(int v); // Value before it in index
 int nmin(); // Minimum value in array
 int nmax(); // Max value in array
 int comp_int(const void *a, const void *b);
-
 int binary_search(int value);
 
-void runMethod(int n, int r1, int r2, bool useCounts) {
-    const int nops = 7;
-    int tops = nops * 0.1 * n;
+void runMethod() {
+    int tops = NOPS * 0.1 * n;
     int count = 0;
     memory = useCounts ? (range * sizeof(int) / 1000000.0) : (nn * (sizeof(int)) / 1000000.0);
     r = useCounts ? (rand() % range - 1) : (rand() % nn);
@@ -83,7 +84,8 @@ void runMethod(int n, int r1, int r2, bool useCounts) {
 
     clock_t start, end;
     while (count++ < tops) {
-        int op = rand() % nops;
+        int r = rand() % range + r1;
+        int op = rand() % NOPS;
         start = clock();
         switch (op) {
             case 0: // find
@@ -119,7 +121,7 @@ void runMethod(int n, int r1, int r2, bool useCounts) {
 
     printf("\nn = %d, r1 = %d, r2 = %d, Memory used = %f\n", n, r1, r2, memory);
     printf(" \t\t Op Counts \t Total time \t Avg. Time \n");
-    for (int i = 0; i < nops; i++) {
+    for (int i = 0; i < NOPS; i++) {
         printf("%-10s \t %-13.6d \t %lf \t %.10e \n", operations[i], opCounts[i], times[i], (times[i] / opCounts[i]));
     }
 
@@ -128,24 +130,39 @@ void runMethod(int n, int r1, int r2, bool useCounts) {
 }
 
 void test() {
-    printf("Doing test run");
-//    n = abs(n);
-//    int size = sizeof(array) / sizeof(array[0]);
-//    qsort(array, size, sizeof(int), comp_int);
-//
-//    printf("Numbers: ");
-//    for (int i = 0; i < size; i++)
-//    {
-//        printf("%d ", array[i]);
-//    }
-////    printf(": min %d : max %d\n", nmin(), nmax());
-//
-//    for (int i = 0; i < n; i++)
-//    {
-//        int target = array[i];
-//        printf("%d\n", target);
-//
-//    }
+    printf("Doing test run\n");
+    n = abs(n);
+    int size = sizeof(array) / sizeof(array[0]);
+    memory = (11 * (sizeof(int)) / 1000000.0);
+    printf("\nn = %d, r1 = %d, r2 = %d, Memory used = %f\n", n, r1, r2, memory);
+    printf("Numbers: ");
+    for (int i = 0; i < size; i++)
+        printf("%d ", array[i]);
+    printf(": min %d : max %d\n", nmin(), nmax());
+    printf("\n");
+
+    /*
+     * TODO: Start operations here
+     */
+    for (int i = 0; i < 8; i++)
+    {
+        int target = testnum[i];
+        int find_result = find(target);
+        int delete_num = delete(target);
+        int find_result_after = find(target);
+        int delete_num_after = delete(target);
+        int add_num = add(target);
+        int last_find = find(target);
+        int getting_succ = succ(target);
+        int getting_pred = pred(target);
+
+//        printf("succ %d %d ", target, getting_succ);
+        printf("Find %d %d: Delete %d %d: Find %d %d: Delete %d %d: Add %d %d: Find %d %d: succ %d %d: pred %d %d \n",
+                target, find_result, target, delete_num, target, find_result_after, target, delete_num_after,
+                target, add_num, target, last_find, target, getting_succ, target, getting_pred);
+
+
+    }
 }
 
 void drive() {
@@ -167,6 +184,8 @@ int main(int argc, char *argv[]) {
     r2 = atoi(argv[3]);
     nn = n * 1.1;
 
+
+
 //    srand(time(NULL));
 
     range = r2 - r1 + 1; // r1 = 3, r2 = 10, range = 8
@@ -179,9 +198,13 @@ int main(int argc, char *argv[]) {
         nums = (int *) malloc(nn * sizeof(int));
     }
 
-//    if (n < 0)
-//        testing = true;
-//        test();
+
+    if (n < 0) {
+        testing = true;
+        n = 11;
+        test();
+        return 0;
+    }
     drive();
     return 0;
 }
@@ -190,17 +213,24 @@ int find(int v) {
     if (useCounts) {
         return counts[v - r1];
     } else {
+
+        int *oparray = (testing) ? array : nums;
+        int opn = (testing) ? n : nn;
+
         int amount = 1;
         int index = binary_search(v);
-        if (index != -1) {
+        //printf("BINARY SEARCH FIND \n");
+
+        if (index >=  0) {
             // Check for duplicates to the right
-            while (index < nn - 1 && nums[index + 1] == v) {
+            //printf("index + 1 = %d\n", index+1);
+            while (index < opn - 1 && oparray[index + 1] == v) {
                 index++;
                 amount++;
             }
             return amount;
         }
-        return -1;
+        return 0;
     }
 }
 
@@ -209,35 +239,43 @@ int add(int v) {
         counts[v - r1]++;
         return 1;
     }
+
+    int *oparray = (testing) ? array : nums;
+    int opn = (testing) ? n : nn;
+
     int index = binary_search(v);
+
     index = abs(index);
 
     int end = index;
-    while (nums[end] != -1 && end < nn) end++; // Search right
-    if (end == nn) {
-        while (nums[end] != -1 && end > 0) end--;
-        
+    while (oparray[end] != -1 && end < opn) end++; // Search right
+
+    if (end == opn) {
+        while (oparray[end] != -1 && end > 0) end--;
+
         for (int i = end; i < index; i++)
-            nums[i] = nums[i + 1];
+            oparray[i] = oparray[i + 1];
     }
     else // Move right
         for (int i = end; i > index; i--)
-            nums[i] = nums[i - 1];
-    nums[index] = v;
+            oparray[i] = oparray[i - 1];
+    }
+    oparray[index] = v;
     return 1;
 
 }
 int delete(int v) {
-
     if (useCounts) {
         if (counts[v - r1] > 0) {
             counts[v - r1]--;
         }
         return 1;
     } else {
+        int *oparray = (testing) ? array : nums;
         int index = binary_search(v);
+        //printf("BINARY SEARCH DELETE %d\n", index);
         if (index >= 0) {
-            nums[index] = -1;
+            oparray[index] = -1;
             return 1;
         }
         return 0;
@@ -255,17 +293,21 @@ int succ(int v) {
         }
         return i;
     } else {
+        int *oparray = (testing) ? array : nums;
+        int opn = (testing) ? n : nn;
+
         int index = binary_search(v);
-        if (index != -1) {
+        //printf("BINARY SEARCH SUCC (%d>%d) \n", v, index);
+        if (index >= 0) {
             int successor = index + 1;
-            while (successor < n && (nums[successor] == -1 || nums[successor] == v)) {
+            while (successor < opn && (oparray[successor] == -1 || oparray[successor] == v)) {
                 successor++;
             }
-            while (successor < n && successor > 0 && nums[successor - 1] == nums[successor]) {
+            while (successor < opn && successor > 0 && oparray[successor - 1] == oparray[successor]) {
                 successor++;
             }
-            if (successor < n) {
-                return nums[successor];
+            if (successor < opn) {
+                return oparray[successor];
             }
         }
     }
@@ -283,30 +325,38 @@ int pred(int v) {
         }
         return i;
     } else {
+        int *oparray = (testing) ? array : nums;
+        int opn = (testing) ? n : nn;
+
         int index = binary_search(v);
-        if (index != -1) {
+        //printf("BINARY SEARCH PRED (%d>%d)\n", v, index);
+
+
+        if (index >= 0) {
             int predecessor = index - 1;
-            while (predecessor >= 0 && (nums[predecessor] == -1 || nums[predecessor] == v)) {
+            while (predecessor >= 0 && (oparray[predecessor] == -1 || oparray[predecessor] == v)) {
                 predecessor--;
             }
-            while (predecessor >= 0 && predecessor < n - 1 && nums[predecessor] == nums[predecessor + 1]) {
+            while (predecessor >= 0 && predecessor < opn - 1 && oparray[predecessor + 1] == oparray[predecessor]) {
                 predecessor--;
             }
             if (predecessor >= 0) {
-                return nums[predecessor];
+                return oparray[predecessor];
             }
         }
     }
     return -1; // Return -1 if predecessor not found
 }
 
+
 int nmin() {
     if (useCounts) {
         return counts[0];
     } else {
-//        if (testing){
-//            return array[0];
-//        }
+
+        if (testing){
+            return array[0];
+        }
         int index = 0;
         while (nums[index] == -1)
             index++;
@@ -319,11 +369,11 @@ int nmax() {
         int index = range -1;
         return counts[index];
     } else {
-//        if (testing) {
-//            int size = sizeof(array) / sizeof(array[0]);
-//            int index = size - 1;
-//            return array[index];
-//        }
+        if (testing) {
+            int size = sizeof(array) / sizeof(array[0]);
+            int index = size - 1;
+            return array[index];
+        }
         int index = nn - 1;
         while (nums[index] == -1)
             index--;
@@ -336,42 +386,84 @@ int comp_int(const void *a, const void *b) {
     return *(int *) a - *(int *) b;
 }
 
-int binary_search(int value) {
-    int lower = 0, upper = n - 1;
-    // int tmp = 0;
+int binary_search(int value) { // Nope
+    int *oparray = (testing) ? array : nums;
+    int opn = (testing) ? n : nn;
+    int lower = 0, upper = opn - 1;
+    int middle;
+    int m1, m2;
     // bool empty = false;
-
     while (lower <= upper) {
-//        int middle = (upper + lower) / 2;
-        int middle = lower + rand() % (upper - lower + 1);
 
+        middle = (upper + lower) / 2;
+        //printf("middle: %d, lower: %d, upper: %d\n", middle, lower, upper);
+//        if (lower >= upper && oparray[middle] != value) {
+//            if (value < oparray[middle])
+//                while (oparray[middle] > value || oparray[middle] != -1)
+//                    middle--;
+//            return -middle;
+//        }
 
-        // while (nums[middle] == -1) {
-        //     middle--;
-        // }
-
-        if (nums[middle] == value) {
-            while (middle > 0 && nums[middle - 1] == value) {
-                middle--;
+        if (oparray[middle] == -1) {
+            m1 = m2 = middle;
+            //printf("m1: %d, m2: %d\n", m1 ,m2);
+            while(m1>lower && oparray[m1] == -1) {
+                m1--;
             }
-            return middle;
+            while(m2<upper && oparray[m2] == -1) {
+                m2++;
+            }
+            //printf("m1: %d, m2: %d\n", m1 ,m2);
+
+            if (oparray[m1] == -1 && oparray[m2] == -1)
+                return -m1;
+            //printf("m1: %d, m2: %d\n", m1 ,m2);
+            if (oparray[m1] == value) {
+                return m1;
+            }
+            else if (oparray[m2] == value) {
+                return m2;
+            }
+            else {
+                if (m1 >= 0) {
+                    if (oparray[m1] < value) {
+                        if (m2 < opn && oparray[m2] < value) {
+                            lower = m2 + 1; // now can move it
+                        } else {
+                            return -middle;
+                        }
+                    }
+                    else if (oparray[m1] > value) {
+                        upper = m1 - 1; // good
+                    }
+                }
+                if (m2 < opn) {
+                    if (oparray[m2] < value) {
+                        lower = m2 + 1; // good
+                    }
+                    else if (oparray[m2] > value) {
+                        if (m1 > 0 && oparray[m1] > value) {
+                            upper = m1 - 1; // good
+                        } else {
+                            return -middle;
+                        }
+                    }
+                }
+            }
+            continue;
         }
 
-        else if (nums[middle] < value) {
-            // while(nums[middle] == -1 || nums[middle] < value)
-            //     middle++;
-
-            // // TODO: This is latest implementation
-            // if (nums[middle] > value)
-            //     return -middle;
-            // // ----
-
-            // lower = middle;
-            lower = middle + 1;
-
+        if (oparray[middle] == value) {
+            return middle;
+        }
+        else if (oparray[middle] < value) {
+            lower = middle + 1; // good
+//            while (oparray[lower] == -1)
+//                lower++;
         } else {
             upper = middle - 1;
         }
     }
+
     return -1;
 }
