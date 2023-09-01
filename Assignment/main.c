@@ -110,7 +110,6 @@ void runMethod() {
 void test() {
     printf("Doing test run\n");
     n = abs(n);
-    int size = sizeof(array) / sizeof(array[0]);
     memory = (11 * (sizeof(int)) / 1000000.0);
     printf("\nn = %d, r1 = %d, r2 = %d, Memory used = %f\n", 10, r1, r2, memory);
     print_array();
@@ -194,12 +193,11 @@ int find(int v) {
         int *oparray = (testing) ? array : nums;
         int opn = (testing) ? n : nn;
 
-        int amount = 1;
+        int amount = 0;
         int index = binary_search(v);
-
         if (index >=  0) {
             // Check for duplicates to the right
-            while (index < opn - 1 && oparray[index + 1] == v) {
+            while (index < opn && oparray[index] == v) {
                 index++;
                 amount++;
             }
@@ -217,25 +215,35 @@ int add(int v) {
 
     int *oparray = (testing) ? array : nums;
     int opn = (testing) ? n : nn;
-
     int index = binary_search(v);
-
     index = abs(index);
+    if (oparray[index] == -1) {
+        oparray[index] = v;
+        return 1;
+    }
     int end = index;
     int a, b;
     a = b = end;
-    while (oparray[a] != -1 && end < opn) a++; // Search right
-    while (oparray[b] != -1 && end > 0) b--; // Search left
+    while (a < opn && oparray[a] != -1) a++; // Search right
+    while (b > 0 && oparray[b] != -1) b--; // Search left
 
-    if (b - index < a - index) {
+    bool foundl = (b >= 0 && oparray[b] == -1);
+    bool foundr = (a < opn && oparray[a] == -1);
+    bool leftbetter = (index - b) <= (a - index);
+
+    if (foundl && leftbetter) {
         end = b;
-        for (int i = end; i > index; i--)
+        for (int i = end; i < index; i++) {
+            oparray[i] = oparray[i + 1];
+        }
+    } else if (foundr) {
+        end = a;
+        for (int i = end; i > index; i--) {
             oparray[i] = oparray[i - 1];
+        }
     }
     else {
-        end = a;
-        for (int i = end; i < index; i++)
-            oparray[i] = oparray[i + 1];
+        return -1;
     }
     oparray[index] = v;
     return 1;
@@ -262,6 +270,8 @@ int delete(int v) {
 int succ(int v) {
     if (useCounts) {
         int i = v - r1 + 1;
+        if (i > range - 1)
+            return -1;
         while (counts[i] == 0) {
             if (i > range - 1) {
                 break;
@@ -293,7 +303,9 @@ int succ(int v) {
 
 int pred(int v) {
     if (useCounts) {
-        int i = v - r1 + 1;
+        int i = v - r1 - 1;
+        if (i < 0)
+            return -1;
         while (counts[i] == 0) {
             if (i < 0) {
                 break;
