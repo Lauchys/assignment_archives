@@ -11,9 +11,8 @@ int *nums, *counts;
 int array[11] = {10, 10, 24, 31, 41, 50, 50, 59, 73, 74, 74};
 int testnum[8] = {10, 24, 31, 41, 50, 59, 73, 74};
 
-double times[7] = {0};
+double times[7] = {0}, avgtime[7] = {0};
 int opCounts[7] = {0};
-double avgtime[7] = {0};
 float memory;
 
 // Prototypes for operations
@@ -35,8 +34,7 @@ int gen_rand()
 }
 
 void runMethod() {
-    int tops = NOPS * 0.1 * n;
-    int count = 0;
+    int tops = (NOPS * 0.1 * n), count = 0;
     memory = useCounts ? (range * sizeof(int) / 1000000.0) : (nn * (sizeof(int)) / 1000000.0);
 
     if (useCounts){
@@ -58,9 +56,8 @@ void runMethod() {
         for (int i = 9; i < nn; i += 11) {
             if (added == expected) break;
             // Do not change if the nums before or after are equal to it (duplicate)
-            int vv = nums[i];
-            int ii = i;
-            while (nums[ii] != vv) {
+            int vv = nums[i], ii = i;
+            while (nums[ii] == vv) {
                 ii++;
             }
             int distance = ii - i;
@@ -80,43 +77,23 @@ void runMethod() {
 
     }
 
-    // At this point in time I have an array of n numbers with every 10th number being -1
-    // {1, 2, 3, 4, 5, 6, 7, 8, 9, -1, 10, 11, 12, 13, 13, 13, 16, 17, 18, 19, -1, 20}
-
     clock_t start, end;
     while (count++ < tops) {
         int r = gen_rand() % range + r1;
         int op = gen_rand() % NOPS;
         start = clock();
         switch (op) {
-            case 0: // find
-                find(r);
-                break;
-            case 1: // add
-                add(r);
-                break;
-            case 2: // delete
-                delete(r);
-                break;
-            case 3: // succ
-                succ(r);
-                break;
-            case 4: // pred
-                pred(r);
-                break;
-            case 5: // nmin
-                nmin();
-                break;
-            case 6: // nmax
-                nmax();
-                break;
-
+            case 0:find(r);break;
+            case 1:add(r);break;
+            case 2:delete(r);break;
+            case 3:succ(r);break;
+            case 4:pred(r);break;
+            case 5:nmin();break;
+            case 6:nmax();break;
         }
-
         end = clock();
         double secs = ((double) end - (double) start) / CLOCKS_PER_SEC;
-        opCounts[op]++;
-        times[op] += secs;
+        opCounts[op]++; times[op] += secs;
     }
     char *operations[] = {"find", "add", "delete", "succ", "pred", "min", "max"};
 
@@ -125,9 +102,6 @@ void runMethod() {
     for (int i = 0; i < NOPS; i++) {
         printf("%-10s \t %-13.6d \t %lf \t %.10e \n", operations[i], opCounts[i], times[i], (times[i] / opCounts[i]));
     }
-
-
-
 }
 
 void test() {
@@ -167,11 +141,8 @@ void test() {
 
 void drive() {
     runMethod();
-    if (useCounts) {
-        free(counts);
-    } else {
-        free(nums);
-    }
+    if (useCounts) { free(counts);
+    } else { free(nums);}
 }
 
 int main(int argc, char *argv[]) {
@@ -184,8 +155,6 @@ int main(int argc, char *argv[]) {
     r1 = atoi(argv[2]);
     r2 = atoi(argv[3]);
     nn = n * 1.1;
-
-
 
 //    sgen_rand(time(NULL));
 
@@ -261,7 +230,6 @@ int add(int v) {
         for (int i = end; i < index; i++)
             oparray[i] = oparray[i + 1];
     }
-
     oparray[index] = v;
     return 1;
 
@@ -354,7 +322,6 @@ int nmin() {
     if (useCounts) {
         return counts[0];
     } else {
-
         if (testing){
             return array[0];
         }
@@ -378,7 +345,6 @@ int nmax() {
         int index = nn - 1;
         while (nums[index] == -1)
             index--;
-
         return nums[index];
     }
 }
