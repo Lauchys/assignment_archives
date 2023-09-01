@@ -10,6 +10,7 @@ int n, r1, r2, range, currentMaxIndex = -1, currentMinIndex = -1, nn;
 int *nums, *counts;
 int array[11] = {10, 10, 24, 31, 41, 50, 50, 59, 73, 74, 74};
 int testnum[8] = {10, 24, 31, 41, 50, 59, 73, 74};
+int final_array[3] = {10, 50, 74};
 
 double times[7] = {0}, avgtime[7] = {0};
 int opCounts[7] = {0};
@@ -25,8 +26,10 @@ int nmin(); // Minimum value in array
 int nmax(); // Max value in array
 int comp_int(const void *a, const void *b);
 int binary_search(int value);
+void print_array();
 void test();
 void drive();
+
 
 int gen_rand()
 {
@@ -109,12 +112,8 @@ void test() {
     n = abs(n);
     int size = sizeof(array) / sizeof(array[0]);
     memory = (11 * (sizeof(int)) / 1000000.0);
-    printf("\nn = %d, r1 = %d, r2 = %d, Memory used = %f\n", n, r1, r2, memory);
-    printf("Numbers: ");
-    for (int i = 0; i < size; i++)
-        printf("%d ", array[i]);
-    printf(": min %d : max %d\n", nmin(), nmax());
-    printf("\n");
+    printf("\nn = %d, r1 = %d, r2 = %d, Memory used = %f\n", 10, r1, r2, memory);
+    print_array();
 
     /*
      * TODO: Start operations here
@@ -131,12 +130,20 @@ void test() {
         int getting_succ = succ(target);
         int getting_pred = pred(target);
 
-        printf("Find %d %d: Delete %d %d: Find %d %d: Delete %d %d: Add %d %d: Find %d %d: succ %d %d: pred %d %d \n",
+        printf("find %d %d : delete %d %d:  find %d %d : delete %d %d : add %d %d : find %d %d : succ %d %d: pred %d %d \n",
                 target, find_result, target, delete_num, target, find_result_after, target, delete_num_after,
                 target, add_num, target, last_find, target, getting_succ, target, getting_pred);
-
-
     }
+    print_array();
+    for (int i = 0; i < 3; i++) {
+        int target = final_array[i];
+        int add_to_array = add(target);
+        int find_new = find(target);
+        printf("add %d %d : find %d %d\n", target, add_to_array, target, find_new);
+    }
+    print_array();
+
+
 }
 
 void drive() {
@@ -322,13 +329,12 @@ int nmin() {
     if (useCounts) {
         return counts[0];
     } else {
-        if (testing){
-            return array[0];
-        }
+        int *oparray = (testing) ? array : nums;
+        int opn = (testing) ? 11 : nn;
         int index = 0;
-        while (nums[index] == -1)
+        while (oparray[index] == -1 && index < opn)
             index++;
-        return nums[index];
+        return oparray[index];
     }
 }
 
@@ -337,20 +343,28 @@ int nmax() {
         int index = range -1;
         return counts[index];
     } else {
-        if (testing) {
-            int size = sizeof(array) / sizeof(array[0]);
-            int index = size - 1;
-            return array[index];
-        }
-        int index = nn - 1;
-        while (nums[index] == -1)
+        int *oparray = (testing) ? array : nums;
+        int opn = (testing) ? 11 : nn;
+        int index = opn - 1;
+        while (oparray[index] == -1 && index > 0)
             index--;
-        return nums[index];
+        return oparray[index];
     }
 }
 
 int comp_int(const void *a, const void *b) {
     return *(int *) a - *(int *) b;
+}
+
+void print_array(){
+    int size = sizeof(array) / sizeof(array[0]);
+    printf("Numbers: ");
+    for (int i = 0; i < size; i++) {
+        if (array[i] == -1)
+            continue;
+        printf("%d ", array[i]);
+    }
+    printf(": min %d : max %d\n", nmin(), nmax());
 }
 
 int binary_search(int value) {
