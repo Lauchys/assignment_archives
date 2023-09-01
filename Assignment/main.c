@@ -29,6 +29,11 @@ int binary_search(int value);
 void test();
 void drive();
 
+int gen_rand()
+{
+    return RAND_MAX == 0x7fffffff ? rand() : rand() << 16 | rand() << 1 | rand() & 1;
+}
+
 void runMethod() {
     int tops = NOPS * 0.1 * n;
     int count = 0;
@@ -39,19 +44,19 @@ void runMethod() {
         // ./file 100m 1 100k
         // Generate n numbers and increment the frequency in the range
         for (int i = 0; i < n; i++){
-            counts[rand() % range - 1] += 1;
+            counts[gen_rand() % range - 1] += 1;
         }
     } else {
         printf("Using nums\n");
         // Generate 1.1 * n random numbers and sort them
         for (int i = 0; i < nn; i++) {
-            nums[i] = rand() % range + r1;
+            nums[i] = gen_rand() % range + r1;
         }
         qsort(nums, nn, sizeof(int), comp_int);
         // Change every 10th number to -1
-        int tmp = 0, expected = n * 0.1;
+        int added = 0, expected = n * 0.1;
         for (int i = 9; i < nn; i += 11) {
-            if (tmp == expected) break;
+            if (added == expected) break;
             // Do not change if the nums before or after are equal to it (duplicate)
             int vv = nums[i];
             int ii = i;
@@ -59,42 +64,19 @@ void runMethod() {
                 ii++;
             }
             int distance = ii - i;
-            if (distance > 1) { // 1 1 2
-                int d = distance / 11;
-                if (d == 0) d = 1;
-                for (int j=1; j<=d; j++) {
+            if (distance > 1) { // actual duplicates not just a single one
+                int needed = distance / 11; // how many we missed because of duplicates
+                if (needed == 0) needed = 1; // we landed in duplicates, but we cant put one there, but once we get to the end of the duplicates, we can put it. need at least one where duplicates are
+                for (int j=0; j<needed; j++) { // add the amount needed at end of duplicates, going backwards
                     nums[i-j]=-1;
-                    tmp++;
+                    added++;
                 }
-            } else {
+            } else { // no duplicates, safe to replace
                 nums[i] = -1;
-                tmp++;
+                added++;
             }
 
-//            // 1111111111122222x222222222222x22222222222x222225555555555555555
-//            if ((i > 0 && nums[i - 1] == nums[i]) || (i < nn - 1 && nums[i + 1] == nums[i])) {
-//                int j = i;
-//                while (j > 0 && (nums[j - 1] == nums[i] || nums[j - 1] == -1)) {
-//                    j--;
-//                }
-//                nums[j] = -1;
-//                tmp++;
-//
-//                continue;
-//            }
-            //nums[i] = -1;
-            //tmp++;
         }
-        printf("Current count of -1 in array: %d \n", tmp);
-        printf("Expected amount of -1 in array: %f \n", n * 0.1);
-
-        for (int i = 109999000; i < nn; i++) {
-            if(nums[i] == -1){
-                printf("\n");
-            }
-            printf("%d ", nums[i]);
-        }
-        printf("\n");
 
     }
 
@@ -103,8 +85,8 @@ void runMethod() {
 
     clock_t start, end;
     while (count++ < tops) {
-        int r = rand() % range + r1;
-        int op = rand() % NOPS;
+        int r = gen_rand() % range + r1;
+        int op = gen_rand() % NOPS;
         start = clock();
         switch (op) {
             case 0: // find
@@ -175,7 +157,6 @@ void test() {
         int getting_succ = succ(target);
         int getting_pred = pred(target);
 
-//        printf("succ %d %d ", target, getting_succ);
         printf("Find %d %d: Delete %d %d: Find %d %d: Delete %d %d: Add %d %d: Find %d %d: succ %d %d: pred %d %d \n",
                 target, find_result, target, delete_num, target, find_result_after, target, delete_num_after,
                 target, add_num, target, last_find, target, getting_succ, target, getting_pred);
@@ -206,7 +187,7 @@ int main(int argc, char *argv[]) {
 
 
 
-//    srand(time(NULL));
+//    sgen_rand(time(NULL));
 
     range = r2 - r1 + 1; // r1 = 3, r2 = 10, range = 8
     useCounts = (range < n) ? true : false;
@@ -239,11 +220,9 @@ int find(int v) {
 
         int amount = 1;
         int index = binary_search(v);
-        //printf("BINARY SEARCH FIND \n");
 
         if (index >=  0) {
             // Check for duplicates to the right
-            //printf("index + 1 = %d\n", index+1);
             while (index < opn - 1 && oparray[index + 1] == v) {
                 index++;
                 amount++;
@@ -267,20 +246,22 @@ int add(int v) {
 
     index = abs(index);
     int end = index;
-    while (oparray[end] != -1 && end < opn) end++; // Search right
-    //printf("end = %d, index = %d\n", end, index);
+    int a, b;
+    a = b = end;
+    while (oparray[a] != -1 && end < opn) a++; // Search right
+    while (oparray[b] != -1 && end > 0) b--; // Search left
 
-    if (end == opn) {
-        while (oparray[end] != -1 && end > 0) end--;
-
-        for (int i = end; i < index; i++)
-            oparray[i] = oparray[i + 1];
-    }
-    else {// Move right
-        //printf("MOVING RIGHT: %d\n", end-index);
+    if (b - index < a - index) {
+        end = b;
         for (int i = end; i > index; i--)
             oparray[i] = oparray[i - 1];
     }
+    else {
+        end = a;
+        for (int i = end; i < index; i++)
+            oparray[i] = oparray[i + 1];
+    }
+
     oparray[index] = v;
     return 1;
 
@@ -294,9 +275,8 @@ int delete(int v) {
     } else {
         int *oparray = (testing) ? array : nums;
         int index = binary_search(v);
-        //printf("BINARY SEARCH DELETE %d,%d\n", v, index);
+
         if (index >= 0) {
-            //printf("d: %d\n", index);
             oparray[index] = -1;
             return 1;
         }
@@ -319,7 +299,7 @@ int succ(int v) {
         int opn = (testing) ? n : nn;
 
         int index = binary_search(v);
-        //printf("BINARY SEARCH SUCC (%d>%d) \n", v, index);
+
         if (index >= 0) {
             int successor = index + 1;
             while (successor < opn && (oparray[successor] == -1 || oparray[successor] == v)) {
@@ -351,7 +331,6 @@ int pred(int v) {
         int opn = (testing) ? n : nn;
 
         int index = binary_search(v);
-        //printf("BINARY SEARCH PRED (%d>%d)\n", v, index);
 
 
         if (index >= 0) {
@@ -408,38 +387,27 @@ int comp_int(const void *a, const void *b) {
     return *(int *) a - *(int *) b;
 }
 
-int binary_search(int value) { // Nope
+int binary_search(int value) {
     int *oparray = (testing) ? array : nums;
     int opn = (testing) ? n : nn;
     int lower = 0, upper = opn - 1;
     int middle;
     int m1, m2;
-    // bool empty = false;
     while (lower <= upper) {
 
         middle = (upper + lower) / 2;
-        //printf("middle: %d, lower: %d, upper: %d\n", middle, lower, upper);
-//        if (lower >= upper && oparray[middle] != value) {
-//            if (value < oparray[middle])
-//                while (oparray[middle] > value || oparray[middle] != -1)
-//                    middle--;
-//            return -middle;
-//        }
 
         if (oparray[middle] == -1) {
             m1 = m2 = middle;
-            //printf("m1: %d, m2: %d\n", m1 ,m2);
             while(m1>lower && oparray[m1] == -1) {
                 m1--;
             }
             while(m2<upper && oparray[m2] == -1) {
                 m2++;
             }
-            //printf("m1: %d, m2: %d\n", m1 ,m2);
 
             if (oparray[m1] == -1 && oparray[m2] == -1)
                 return -m1;
-            //printf("m1: %d, m2: %d\n", m1 ,m2);
             if (oparray[m1] == value) {
                 return m1;
             }
@@ -450,7 +418,7 @@ int binary_search(int value) { // Nope
                 if (m1 >= 0) {
                     if (oparray[m1] < value) {
                         if (m2 < opn && oparray[m2] < value) {
-                            lower = m2 + 1; // now can move it
+                            lower = m2 + 1; // now can move it,for v=6: [m1=3] -1 -1 [m2=5] 6
                         } else {
                             return -middle;
                         }
@@ -480,17 +448,12 @@ int binary_search(int value) { // Nope
         }
         else if (oparray[middle] < value) {
             lower = middle + 1; // good
-//            while (oparray[lower] == -1)
-//                lower++;
         } else {
             upper = middle - 1; // good
-//            while (oparray[upper] == -1)
-//                upper--;
         }
     }
-    if (upper < lower/*&& oparray[lower] != -1*/) {
+    if (upper < lower) {
         return upper;
     }
-//    printf("death %d - %d\n", lower, upper);
     return -1;
 }
