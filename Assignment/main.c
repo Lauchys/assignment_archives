@@ -12,7 +12,7 @@ int array[11] = {10, 10, 24, 31, 41, 50, 50, 59, 73, 74, 74};
 int testnum[8] = {10, 24, 31, 41, 50, 59, 73, 74};
 int final_array[3] = {10, 50, 74};
 
-double times[7] = {0}, avgtime[7] = {0};
+double times[7] = {0};
 int opCounts[7] = {0};
 float memory;
 
@@ -54,11 +54,18 @@ void runMethod() {
             nums[i] = gen_rand() % range + r1;
         }
         qsort(nums, nn, sizeof(int), comp_int);
-        // Change every 10th number to -1
+
+
+        /** This code searches through the nums array to find all the duplicate numbers
+         * Then at the end of each chunk of duplicate numbers, adds a -1
+         *
+         * Calculates how many -1's are needed to reach the expected amount and adds them
+         * This should @return nums[] with the most even distribution of -1's throughout the array
+         */
+
         int added = 0, expected = n * 0.1;
         for (int i = 9; i < nn; i += 11) {
             if (added == expected) break;
-            // Do not change if the nums before or after are equal to it (duplicate)
             int vv = nums[i], ii = i;
             while (nums[ii] == vv) {
                 ii++;
@@ -66,7 +73,7 @@ void runMethod() {
             int distance = ii - i;
             if (distance > 1) { // actual duplicates not just a single one
                 int needed = distance / 11; // how many we missed because of duplicates
-                if (needed == 0) needed = 1; // we landed in duplicates, but we cant put one there, but once we get to the end of the duplicates, we can put it. need at least one where duplicates are
+                if (needed == 0) needed = 1;
                 for (int j=0; j<needed; j++) { // add the amount needed at end of duplicates, going backwards
                     nums[i-j]=-1;
                     added++;
@@ -79,7 +86,6 @@ void runMethod() {
         }
 
     }
-
     clock_t start, end;
     while (count++ < tops) {
         int r = gen_rand() % range + r1;
@@ -167,7 +173,6 @@ int main(int argc, char *argv[]) {
     range = r2 - r1 + 1; // r1 = 3, r2 = 10, range = 8
     useCounts = (range < n) ? true : false;
 
-    // Allocate memory for counts and initialize it to zero
     if (useCounts) {
         counts = (int *) malloc(range * sizeof(int));
     } else {
@@ -212,15 +217,13 @@ int add(int v) {
         counts[v - r1]++;
         return 1;
     }
-
     int *oparray = (testing) ? array : nums;
     int opn = (testing) ? n : nn;
     int index = binary_search(v);
     index = abs(index);
     if (oparray[index] == -1) {
         oparray[index] = v;
-        return 1;
-    }
+        return 1;}
     int end = index;
     int a, b;
     a = b = end;
@@ -229,7 +232,7 @@ int add(int v) {
 
     bool foundl = (b >= 0 && oparray[b] == -1);
     bool foundr = (a < opn && oparray[a] == -1);
-    bool leftbetter = (index - b) <= (a - index);
+    bool leftbetter = (index - b) <= (a - index); // The closest -1 is left
 
     if (foundl && leftbetter) {
         end = b;
@@ -410,22 +413,22 @@ int binary_search(int value) {
                 if (m1 >= 0) {
                     if (oparray[m1] < value) {
                         if (m2 < opn && oparray[m2] < value) {
-                            lower = m2 + 1; // now can move it,for v=6: [m1=3] -1 -1 [m2=5] 6
+                            lower = m2 + 1;
                         } else {
                             return -middle;
                         }
                     }
                     else if (oparray[m1] > value) {
-                        upper = m1 - 1; // good
+                        upper = m1 - 1;
                     }
                 }
                 if (m2 < opn) {
                     if (oparray[m2] < value) {
-                        lower = m2 + 1; // good
+                        lower = m2 + 1;
                     }
                     else if (oparray[m2] > value) {
                         if (m1 > 0 && oparray[m1] > value) {
-                            upper = m1 - 1; // good
+                            upper = m1 - 1;
                         } else {
                             return -middle;
                         }
@@ -439,9 +442,9 @@ int binary_search(int value) {
             return middle;
         }
         else if (oparray[middle] < value) {
-            lower = middle + 1; // good
+            lower = middle + 1;
         } else {
-            upper = middle - 1; // good
+            upper = middle - 1;
         }
     }
     if (upper < lower) {
