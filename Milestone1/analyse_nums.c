@@ -120,9 +120,6 @@ void test() {
     printf("\nn = %d, r1 = %d, r2 = %d, Memory used = %f\n", 10, r1, r2, memory);
     print_array();
 
-    /*
-     * TODO: Start operations here
-     */
     for (int i = 0; i < 8; i++)
     {
         int target = testnum[i];
