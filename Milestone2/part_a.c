@@ -5,27 +5,15 @@
 #include <ctype.h>
 
 int total_guesses, letters, used_guesses, sorted_words;
-char guess, *letters_used;
+char guess, *user_guess, *letters_used, **words;
 bool *usedLetters, *excluded;
-char **words;
-int number_of_words, letters, mindex;
-char *user_guess;
-int success = 0;
-int max = 0;
-
+int letters, mindex, success = 0, max = 0;
 
 void play();
-
-void makeGuess(char v);
-
 void startGame();
-
 int initFile();
-
 void doCounts(char letter);
-
 bool check_duplicates(char *word);
-
 
 int main(int argc, char *argv[]) {
     letters = atoi(argv[1]);
@@ -35,12 +23,9 @@ int main(int argc, char *argv[]) {
     usedLetters = (bool *) calloc(26, sizeof(bool));
     excluded = (bool *) calloc(sorted_words, sizeof(bool));
     user_guess = (char *) malloc((letters + 1) * sizeof(char ));
-
     letters_used = (char *) malloc(27 * sizeof(char));
     letters_used[0] = '\0';
-
     startGame();
-
     for (int i = 0; i < sorted_words; i++) {
         free(words[i]);
     }
@@ -83,13 +68,9 @@ void play()
                 break;
             }
         }
-
-
-
-
+        usedLetters[val] = true;
     }
 }
-
 
 int initFile() {
     FILE *fptr = fopen("dictionary.txt", "r");
@@ -97,7 +78,6 @@ int initFile() {
         printf("Could not open file");
         return 1;
     }
-
     char buffer[128];
     int count = 0;
     fscanf(fptr, "%127s", buffer);
@@ -137,7 +117,6 @@ int initFile() {
     return true;
 }
 
-
 bool check_duplicates(char *word) {
     int len = strlen(word);
     for (int i = 0; i < len; i++) {
@@ -150,16 +129,15 @@ bool check_duplicates(char *word) {
 }
 
 void doCounts(char letter) {
-
-
-    int *counts = (int *) malloc((letters + 1) * sizeof(int)); // Counts of each word in the word categories below
+    int *counts = (int *) calloc(letters + 1, sizeof(int)); // Counts of each word in the word categories below
     // categories are e***** *e**** **e*** ***e** ****e* ******e ******
     // Find largest category
     for (int i = 0; i < sorted_words; i++) { // Start from 0 - 6887
         if (!excluded[i]) { // if not excluded
             bool found = false;
             for (int j = 0; j < letters; j++) { // Increment through word by letter index
-                if (words[i][j] == letter) { // e.g word is yanked       i = 6803 (index of word in words array)        j = 1 (index of letter 'a' in word)
+                if (words[i][j] ==
+                    letter) { // e.g word is yanked       i = 6803 (index of word in words array)        j = 1 (index of letter 'a' in word)
                     found = true;
                     counts[j]++; // e.g count of *a**** incremented
                     break;
@@ -169,10 +147,6 @@ void doCounts(char letter) {
                 counts[letters]++; // Increment count where 'a' found in word
         }
     }
-//    int total = 0;
-//    for (int i = 0; i <= letters; i++) {
-//        total += counts[i];
-//    }
     max = counts[0], mindex = 0;//start off assuming that the 1st element is the max
     for (int i = 0; i <= letters; i++)//now compare it with the rest of the array, updataing the max all along
     {
@@ -185,15 +159,9 @@ void doCounts(char letter) {
         user_guess[mindex] = letter; // Change the guess letter
         success++;
     }
-    // Otherwise don't change because largest count is when 'a' wasn't in the word
-
-
     for (int i = 0; i < sorted_words; i++) {
-
         if (!excluded[i]) {
-
             bool found = false;
-
             for (int j = 0; j < letters; j++) {
                 if (words[i][j] == letter) {
                     found = true;
@@ -209,20 +177,4 @@ void doCounts(char letter) {
     }
 
 
-}
-void makeGuess(char v) {
-    v = tolower(v);
-    int val = v - 'a'; // a = 0
-    if (usedLetters[val] == true) {
-        printf("%c already used 2\n", v);
-        return;
-    }
-    usedLetters[val] = true;
-
-    int len = strlen(letters_used);
-    letters_used[len] = v;
-    letters_used[len + 1] = '\0'; // Null-terminate the string
-
-    used_guesses++;
-    printf("Guess %d / %d, Words Left %d, Letter used = %s\n", used_guesses, total_guesses, max, letters_used);
 }
