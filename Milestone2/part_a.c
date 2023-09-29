@@ -8,11 +8,11 @@ int total_guesses, letters, used_guesses, sorted_words;
 char guess, *letters_used;
 bool *usedLetters, *excluded;
 char **words;
-int number_of_words, letters;
+int number_of_words, letters, mindex;
 char *user_guess;
+int success = 0;
+int max = 0;
 
-
-void wordprint();
 
 void play();
 
@@ -65,7 +65,7 @@ void play()
             printf("Answer is = Something lol\n");
             break;
         }
-        wordprint();
+        printf("%s", user_guess);
         printf(" Enter letter: ");
         scanf("%c", &guess);
         guess = tolower(guess);
@@ -77,7 +77,11 @@ void play()
         else if (usedLetters[val] == false)
         {
             makeGuess(guess);
-            doCounts(guess);
+            if (success == letters)
+            {
+                printf("%s is correct!\n", user_guess);
+                break;
+            }
         }
 
 
@@ -167,18 +171,11 @@ void doCounts(char letter) {
                 counts[letters]++; // Increment count where 'a' found in word
         }
     }
-    printf("%c***** = %d\n", letter, counts[0]);
-    printf("*%c**** = %d\n", letter, counts[1]);
-    printf("**%c*** = %d\n", letter, counts[2]);
-    printf("***%c** = %d\n", letter, counts[3]);
-    printf("****%c* = %d\n", letter, counts[4]);
-    printf("*****%c = %d\n", letter, counts[5]);
-    printf("****** = %d\n", counts[6]);
-    int total = 0;
-    for (int i = 0; i <= letters; i++) {
-            total += counts[i];
-    }
-    int max = counts[0], mindex = 0;//start off assuming that the 1st element is the max
+//    int total = 0;
+//    for (int i = 0; i <= letters; i++) {
+//        total += counts[i];
+//    }
+    max = counts[0], mindex = 0;//start off assuming that the 1st element is the max
     for (int i = 0; i <= letters; i++)//now compare it with the rest of the array, updataing the max all along
     {
         if (counts[i] > max) {
@@ -188,14 +185,10 @@ void doCounts(char letter) {
     }
     if (mindex < letters){ // largest count is less than 6 (e.g 'a' was in the word)
         user_guess[mindex] = letter; // Change the guess letter
-        printf("BEST GROUP = %s     INDEX %d REPLACED WITH %c\n", user_guess, mindex, letter);
-
+        success++;
     }
     // Otherwise don't change because largest count is when 'a' wasn't in the word
 
-
-
-    printf("Total = %d, Max index = %d, Words found = %d\n", total, mindex, max);
 
     for (int i = 0; i < sorted_words; i++) {
 
@@ -217,20 +210,8 @@ void doCounts(char letter) {
         }
     }
 
-//    if (mindex < letters){ // largest count is less than 6 ('a' was in the word)
-//        user_guess[mindex] = letter; // Change the guess letter
-////        printf("STRING = %s\nINDEX %d REPLACED WITH %c\n", user_guess, mindex, letter);
-//
-//    }
-
 
 }
-
-
-void wordprint() {
-    printf("%s", user_guess);
-}
-
 void makeGuess(char v) {
     v = tolower(v);
     int val = v - 'a'; // a = 0
@@ -245,6 +226,5 @@ void makeGuess(char v) {
     letters_used[len + 1] = '\0'; // Null-terminate the string
 
     used_guesses++;
-    printf("Guess %d / %d, Words Left %d, Letter used = %s\n", used_guesses, total_guesses, sorted_words, letters_used);
-    getchar();
+    printf("Guess %d / %d, Words Left %d, Letter used = %s\n", used_guesses, total_guesses, max, letters_used);
 }
