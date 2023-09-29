@@ -119,8 +119,6 @@ int initFile() {
             }
     }
     sorted_words = count; // Sorted words = count of words in dictionary that contain n letters (there are 6887 words in dictionary of length 6)
-    fscanf(gameptr, "%127s", buffer);
-    rewind(gameptr);
     words = (char **) malloc(sorted_words * sizeof(char *)); // Words is all 6 letter words indexed from 0 - 6887
 
     for (int i = 0; i < sorted_words && fscanf(gameptr, "%127s", buffer) == 1; i++) {
