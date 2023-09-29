@@ -126,6 +126,7 @@ int initFile() {
             strcpy(words[i], buffer); // words[0] = a 6 letter word starting with a
         } else {
             printf("Memory allocation error");
+            exit(1);
         }
         // This is where I add words to array
     }
@@ -166,19 +167,19 @@ void doCounts(char letter) {
                 counts[letters]++; // Increment count where 'a' found in word
         }
     }
-//    printf("%c***** = %d\n", letter, counts[0]);
-//    printf("*%c**** = %d\n", letter, counts[1]);
-//    printf("**%c*** = %d\n", letter, counts[2]);
-//    printf("***%c** = %d\n", letter, counts[3]);
-//    printf("****%c* = %d\n", letter, counts[4]);
-//    printf("*****%c = %d\n", letter, counts[5]);
-//    printf("****** = %d\n", counts[6]);
+    printf("%c***** = %d\n", letter, counts[0]);
+    printf("*%c**** = %d\n", letter, counts[1]);
+    printf("**%c*** = %d\n", letter, counts[2]);
+    printf("***%c** = %d\n", letter, counts[3]);
+    printf("****%c* = %d\n", letter, counts[4]);
+    printf("*****%c = %d\n", letter, counts[5]);
+    printf("****** = %d\n", counts[6]);
     int total = 0;
-    for (int i = 0; i <= letters + 1; i++) {
+    for (int i = 0; i <= letters; i++) {
             total += counts[i];
     }
     int max = counts[0], mindex = 0;//start off assuming that the 1st element is the max
-    for (int i = 0; i <= letters + 1; i++)//now compare it with the rest of the array, updataing the max all along
+    for (int i = 0; i <= letters; i++)//now compare it with the rest of the array, updataing the max all along
     {
         if (counts[i] > max) {
             max = counts[i];
@@ -194,7 +195,7 @@ void doCounts(char letter) {
 
 
 
-//    printf("Total = %d, Max index = %d, Words found = %d\n", total, mindex, max);
+    printf("Total = %d, Max index = %d, Words found = %d\n", total, mindex, max);
 
     for (int i = 0; i < sorted_words; i++) {
 
@@ -216,11 +217,11 @@ void doCounts(char letter) {
         }
     }
 
-    if (mindex < letters){ // largest count is less than 6 ('a' was in the word)
-        user_guess[mindex] = letter; // Change the guess letter
-//        printf("STRING = %s\nINDEX %d REPLACED WITH %c\n", user_guess, mindex, letter);
-
-    }
+//    if (mindex < letters){ // largest count is less than 6 ('a' was in the word)
+//        user_guess[mindex] = letter; // Change the guess letter
+////        printf("STRING = %s\nINDEX %d REPLACED WITH %c\n", user_guess, mindex, letter);
+//
+//    }
 
 
 }
