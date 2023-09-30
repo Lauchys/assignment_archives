@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     letters = atoi(argv[1]);
     total_guesses = atoi(argv[2]);
     used_guesses = 0;
-
+    initFile();
     usedLetters = (bool *) calloc(26, sizeof(bool));
     excluded = (bool *) calloc(sorted_words, sizeof(bool));
     user_guess = (char *) malloc((letters + 1) * sizeof(char ));
@@ -34,12 +34,10 @@ int main(int argc, char *argv[]) {
 
 void startGame() {
     for (int i = 0; i < letters; i++) {
-        user_guess[i] = '_';}
-    initFile();
-    while (used_guesses < total_guesses) {
-        play();
+        user_guess[i] = '_';
     }
-
+    user_guess[letters] = '\0';
+    play();
 }
 
 void play()
@@ -47,21 +45,41 @@ void play()
     char buffer[128], text[128];
     while (true) {
         if (used_guesses == total_guesses) {
-            printf("Answer is = Something lol\n");
+            for (int i = 0; i < sorted_words; i++) {
+                if (!excluded[i]) {
+                    printf("Word was %s\n", words[i]);
+                    break;
+                }
+            }
             break;
         }
         printf("%s", user_guess);
         printf(" Enter letter: ");
-        scanf("%c", &guess);
+        char stringbuffer[128];
+        scanf("%s", stringbuffer);
+        if (strlen(stringbuffer) > 1) {
+            printf("Exceeded character limit\n");
+            continue;
+        }
+        guess = stringbuffer[0];
         guess = tolower(guess);
         int val = guess - 'a'; // a = 0
-        if (usedLetters[val] == true) {
+        if (val < 0 || val >= 26) {
+            printf("%c is not a letter\n", guess);
+        }
+        else if (usedLetters[val] == true) {
             printf("%c already used \n", guess);
             getchar();
         }
         else if (usedLetters[val] == false)
         {
-            makeGuess(guess);
+            doCounts(guess);
+            int len = strlen(letters_used);
+            letters_used[len] = guess;
+            letters_used[len + 1] = '\0'; // Null-terminate the string
+            used_guesses++;
+            printf("Guess %d / %d, Words Left %d, Letter used = %s\n", used_guesses, total_guesses, max, letters_used);
+
             if (success == letters)
             {
                 printf("%s is correct!\n", user_guess);
@@ -80,39 +98,28 @@ int initFile() {
     }
     char buffer[128];
     int count = 0;
-    fscanf(fptr, "%127s", buffer);
-    char new_filename[128];
-    sprintf(new_filename, "game_%d_%d.txt", letters, total_guesses);
-    FILE *gameptr = fopen(new_filename, "w+");
-    if (!gameptr) {
-        printf("Could not create game file\n");
-        fclose(fptr);
-        return 1;
-    }
-    rewind(fptr);
     while (fscanf(fptr, "%127s", buffer) == 1) {
         int len = strlen(buffer);
-        if (len == letters)
-            if (check_duplicates(buffer)) {
-                fprintf(gameptr, "%s\n", buffer);
-                count++;
-            }
+        if (len == letters && check_duplicates(buffer)) {
+            count++;
+        }
     }
     sorted_words = count; // Sorted words = count of words in dictionary that contain n letters (there are 6887 words in dictionary of length 6)
     words = (char **) malloc(sorted_words * sizeof(char *)); // Words is all 6 letter words indexed from 0 - 6887
-
-    for (int i = 0; i < sorted_words && fscanf(gameptr, "%127s", buffer) == 1; i++) {
+    rewind(fptr);
+    for (int i = 0; fscanf(fptr, "%127s", buffer) == 1; ) {
         int len = strlen(buffer);
-        words[i] = (char *) malloc((len + 1) * sizeof(char));
-        if (words[i] != NULL) {
-            strcpy(words[i], buffer); // words[0] = a 6 letter word starting with a
-        } else {
-            printf("Memory allocation error");
-            exit(1);
+        if (len == letters && check_duplicates(buffer)) {
+            words[i] = (char *) malloc((len + 1) * sizeof(char));
+            if (words[i] != NULL) {
+                strcpy(words[i], buffer); // words[0] = a 6 letter word starting with a
+                i++;
+            } else {
+                printf("Memory allocation error");
+                exit(1);
+            }
         }
-        // This is where I add words to array
     }
-    fclose(gameptr);
     fclose(fptr);
     return true;
 }
@@ -175,6 +182,5 @@ void doCounts(char letter) {
                 excluded[i] = true;
         }
     }
-
-
+    free(counts);
 }
