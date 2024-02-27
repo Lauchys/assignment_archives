@@ -1,3 +1,3 @@
 # Assignment
 
-This project fucking sucks
+Wow this project was super fun
